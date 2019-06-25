@@ -16,6 +16,7 @@ ios|android: SUPPORT_LINUX = false
 TRANSLATIONS += i18n/de_DE.ts i18n/fr_FR.ts
 
 QT += core gui widgets quickwidgets
+android: QT += androidextras
 CONFIG += c++11
 
 TEMPLATE = app
@@ -55,9 +56,6 @@ QMAKE_CXXFLAGS_RELEASE = -O3 -DNDEBUG
 !win32 {
     QMAKE_CFLAGS += -Wa,--noexecstack
 }
-
-# The linker needs this somehow
-android: QMAKE_LFLAGS += -fPIC
 
 macx: ICON = resources/logo.icns
 
@@ -146,6 +144,17 @@ equals(SUPPORT_LINUX, true) {
     QMAKE_CFLAGS += -march=armv7-a -marm
     QMAKE_CXXFLAGS += -march=armv7-a -marm
     QMAKE_LFLAGS += -march=armv7-a -marm # We're using LTO, so the linker has to get the same flags
+}
+
+android {
+    SOURCES += androidfilesupport.cpp
+    DEFINES += FB_NEED_GUI_OPEN=1
+    # Fix up all relocations for known symbols, makes it faster and gets rid of some .text relocations
+    # if disabled in asmcode_arm.S.
+    QMAKE_LFLAGS += -Wl,-Bsymbolic
+}
+else {
+    DEFINES += FB_NEED_GUI_OPEN=0
 }
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android

@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "cpu.h"
 #include "flash.h"
@@ -89,6 +90,12 @@ void gui_status_printf(const char *fmt, ...); // Status output
 void gui_show_speed(double speed); // Speed display output
 void gui_usblink_changed(bool state); // Notification for usblink state changes
 void gui_debugger_entered_or_left(bool entered); // Notification for debug events
+#ifndef FB_NEED_GUI_OPEN
+#error "FB_NEED_GUI_OPEN not defined"
+#endif
+#if FB_NEED_GUI_OPEN
+FILE *gui_open(const char *file, const char *mode); // Returns an open fd or a negative value
+#endif
 
 /* callback == 0: Stop requesting input
  * callback != 0: Call callback with input, then stop requesting */

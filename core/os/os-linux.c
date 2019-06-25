@@ -19,7 +19,6 @@
 #include "../debug.h"
 #include "../mmu.h"
 
-
 #ifdef IS_IOS_BUILD
 
 #include <unistd.h>
@@ -46,7 +45,11 @@ int iOS_is_debugger_attached()
 
 FILE *fopen_utf8(const char *filename, const char *mode)
 {
+#if FB_NEED_GUI_OPEN
+    return gui_open(filename, mode);
+#else
     return fopen(filename, mode);
+#endif
 }
 
 void *os_reserve(size_t size)
@@ -89,13 +92,15 @@ void *os_alloc_executable(size_t size)
 
 void *os_map_cow(const char *filename, size_t size)
 {
-    int fd = open(filename, O_RDONLY);
-    if(fd == -1)
+    FILE *f = fopen_utf8(filename, "rb");
+    if(!f)
         return NULL;
+
+    int fd = fileno(f);
 
     void *ret = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
 
-    close(fd);
+    fclose(f);
     return ret == MAP_FAILED ? NULL : ret;
 }
 
